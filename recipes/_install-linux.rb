@@ -41,6 +41,13 @@ if !dd_agent_version.nil? && dd_agent_version.split('.')[0].split(':').last.to_i
   package dd_pkg_name do
     version dd_agent_version
   end
+elsif node['datadog']['agent6']
+  package 'datadog-agent' do
+    action :remove
+  end
+  package 'datadog-agent6' do
+    action :upgrade
+  end
 else
   # default behavior, remove the `base` package as it is no longer needed
   package 'datadog-agent-base' do
@@ -48,6 +55,12 @@ else
     only_if 'rpm -q datadog-agent-base' if %w(rhel fedora).include?(node['platform_family'])
     not_if 'apt-cache policy datadog-agent-base | grep "Installed: (none)"' if node['platform_family'] == 'debian'
   end
+
+  # remove the agent6 package
+  package 'datadog-agent6' do
+    action :remove
+  end
+
   package_retries = node['datadog']['agent_package_retries']
   package_retry_delay = node['datadog']['agent_package_retry_delay']
   # Install the regular package
